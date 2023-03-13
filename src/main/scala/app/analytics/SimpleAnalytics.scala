@@ -11,15 +11,95 @@ class SimpleAnalytics() extends Serializable {
 
   private var ratingsPartitioner: HashPartitioner = null
   private var moviesPartitioner: HashPartitioner = null
-
+  var moves : RDD[(Int, String, List[String])] = _
+  var ratings_ : RDD[(Int, (Int, (Int,Int, Option[Double], Double, Int)))] = _
   def init(
             ratings: RDD[(Int, Int, Option[Double], Double, Int)],
             movie: RDD[(Int, String, List[String])]
-          ): Unit = ???
+          ): Unit = {
 
-  def getNumberOfMoviesRatedEachYear: RDD[(Int, Int)] = ???
+    moves = movie
+    moves.groupBy(_._1)
+    //moves.foreach(println)
+    var ratings_temp = ratings.map { case (a, b, c, d, e) =>
+      (a, b, c, d, (e / 31557600) + 1970)
+    }
+      .groupBy(_._5)
+      .flatMapValues(iterable => iterable.toList)
+      .groupBy(_._2._2)
+      .flatMapValues(iterable => iterable.toList)
 
-  def getMostRatedMovieEachYear: RDD[(Int, String)] = ???
+    //ratings_temp.take(100)foreach(println)
+    ratings_ =  ratings_temp
+    //ratings_.foreach(println)
+
+    //ratings_mag.foreach(println)
+
+      //.persist()
+
+      //.partitionBy(ratingsPartitioner)
+
+    println(ratings_.getClass)
+  }
+
+
+
+  def getNumberOfMoviesRatedEachYear: RDD[(Int, Int)] = {
+    //ratings_mag.foreach(println)
+    var pipi : RDD[(Int, Int)] = ratings_
+      .groupBy(_._2._1)
+      .mapValues(_.size)
+      .sortByKey()
+    //pipi.foreach(print)
+
+    return pipi
+  }
+
+  def getMostRatedMovieEachYear: Unit ={
+
+    ratings_.foreach(println)
+    val reduce = ratings_.map {case(a,(b,(c,d,e,f,g))) => (a,b)}
+    reduce.take(2).foreach(println)
+    val result = reduce
+      .groupBy(_._2)
+      .mapValues(_.map(_._1))
+      .map{case (w, l) =>
+        val mostFrequent = l.groupBy(identity).maxBy(_._2.size)._1
+        List(w,mostFrequent)
+
+      }
+
+
+
+
+
+
+
+
+
+
+    result.foreach(println)
+    //println(ratings_.count(_.1))
+    /*var sorted = bang
+      .groupBy(_._2.)
+
+
+
+      sorted.foreach(println)*/
+      /*.mapValues(_._2)
+      */
+
+
+
+
+    /*var find_most = bang
+      .groupBy(_)*/
+
+      //.sortByKey()
+    //bang.foreach(print)
+  }
+
+
 
   def getMostRatedGenreEachYear: RDD[(Int, List[String])] = ???
 
