@@ -11,16 +11,16 @@ class SimpleAnalytics() extends Serializable {
 
   private var ratingsPartitioner: HashPartitioner = null
   private var moviesPartitioner: HashPartitioner = null
-  var moves : RDD[(Int, String, List[String])] = _
+  var movies_by_ID : RDD[(Int,(Int, String, List[String]))] = _
   var ratings_ : RDD[(Int, (Int, (Int,Int, Option[Double], Double, Int)))] = _
   def init(
             ratings: RDD[(Int, Int, Option[Double], Double, Int)],
             movie: RDD[(Int, String, List[String])]
           ): Unit = {
 
-    moves = movie
-    moves.groupBy(_._1)
-    //moves.foreach(println)
+    movies_by_ID = movie.groupBy(_._1).flatMapValues(iterable => iterable.toList)
+
+  /*  movies_by_ID.foreach(println)*/
     var ratings_temp = ratings.map { case (a, b, c, d, e) =>
       (a, b, c, d, (e / 31557600) + 1970)
     }
@@ -39,7 +39,7 @@ class SimpleAnalytics() extends Serializable {
 
       //.partitionBy(ratingsPartitioner)
 
-    println(ratings_.getClass)
+    //println(ratings_.getClass)
   }
 
 
@@ -55,19 +55,26 @@ class SimpleAnalytics() extends Serializable {
     return pipi
   }
 
-  def getMostRatedMovieEachYear: Unit ={
+  def getMostRatedMovieEachYear: RDD[(Int, String)]={
 
-    ratings_.foreach(println)
+    /*ratings_.foreach(println)*/
     val reduce = ratings_.map {case(a,(b,(c,d,e,f,g))) => (a,b)}
     reduce.take(2).foreach(println)
     val result = reduce
       .groupBy(_._2)
-      .mapValues(_.map(_._1))
-      .map{case (w, l) =>
-        val mostFrequent = l.groupBy(identity).maxBy(_._2.size)._1
-        List(w,mostFrequent)
+      .map{case (w, l) => (w,l.groupBy(identity).maxBy(_._2.size)._1._1)
+
 
       }
+    /*result.take(20).foreach(println)
+    movies_by_ID.take(20).foreach(println)*/
+    val joined_movie = movies_by_ID.join(result)
+    joined_movie.foreach(println)
+    val result_ret = joined_movie.map{case (key,(movie,(movies_id))) => (key,movie._2)}
+    result_ret.take(20)foreach println
+    return result_ret
+    /*val resultRDD =  joined_movie.map { case (key, ()) => (key, value2) }*/
+    /*result_ret.take(20).foreach(println)*/
 
 
 
@@ -78,7 +85,7 @@ class SimpleAnalytics() extends Serializable {
 
 
 
-    result.foreach(println)
+
     //println(ratings_.count(_.1))
     /*var sorted = bang
       .groupBy(_._2.)
@@ -101,7 +108,24 @@ class SimpleAnalytics() extends Serializable {
 
 
 
-  def getMostRatedGenreEachYear: RDD[(Int, List[String])] = ???
+  def getMostRatedGenreEachYear: RDD[(Int, List[String])] =
+    {
+      val reduce = ratings_.map { case (a, (b, (c, d, e, f, g))) => (a, b) }
+      reduce.take(2).foreach(println)
+      val result = reduce
+        .groupBy(_._2)
+        .map { case (w, l) => (w, l.groupBy(identity).maxBy(_._2.size)._1._1)
+
+
+        }
+      /*result.take(20).foreach(println)
+      movies_by_ID.take(20).foreach(println)*/
+      val joined_movie = movies_by_ID.join(result)
+      joined_movie.foreach(println)
+      val result_genre = joined_movie.map { case (key, (movie, (movies_id))) => (key, movie._3) }
+      result_genre.take(20) foreach println
+      return result_genre
+    }
 
   // Note: if two genre has the same number of rating, return the first one based on lexicographical sorting on genre.
   def getMostAndLeastRatedGenreAllTime: ((String, Int), (String, Int)) = ???

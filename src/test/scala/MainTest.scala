@@ -1832,8 +1832,8 @@ class MainTest {
     processor.init(ratingsLoader.load(), moviesLoader.load())
 
     val res = processor.getMostRatedMovieEachYear
-      /*.collect()
-      .sortWith(_._1 <= _._1)*/
+      .collect()
+      .sortWith(_._1 <= _._1)
 
     val expected = Array(
       (1996,"Toy Story (1995)"),
@@ -1861,7 +1861,7 @@ class MainTest {
       (2018,"Lord of the Rings: The Return of the King, The (2003)")
     )
 
-   /* res.zip(expected).foreach(t => {
+    res.zip(expected).foreach(t => {
       if (t._1._1 != t._2._1) {
         println(t._1._1 + " != " + t._2._1)
       }
@@ -1871,7 +1871,7 @@ class MainTest {
         println(t._1._2 + " != " + t._2._2)
       }
       assert(t._1._2 == t._2._2)
-    })*/
+    })
 
   }
 
