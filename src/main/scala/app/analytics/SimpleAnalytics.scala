@@ -9,8 +9,8 @@ import org.joda.time.DateTime
 
 class SimpleAnalytics() extends Serializable {
 
-  private var ratingsPartitioner: HashPartitioner = null
-  private var moviesPartitioner: HashPartitioner = null
+  private var ratingsPartitioner: HashPartitioner = new HashPartitioner(100)
+  private var moviesPartitioner: HashPartitioner = new HashPartitioner(100)
   var movies_by_ID : RDD[(Int,(Int, String, List[String]))] = _
   var ratings_ : RDD[(Int, (Int, (Int,Int, Option[Double], Double, Int)))] = _
   def init(
@@ -18,7 +18,7 @@ class SimpleAnalytics() extends Serializable {
             movie: RDD[(Int, String, List[String])]
           ): Unit = {
 
-    movies_by_ID = movie.groupBy(_._1).flatMapValues(iterable => iterable.toList)
+    movies_by_ID = movie.groupBy(_._1).flatMapValues(iterable => iterable.toList).partitionBy(moviesPartitioner).persist()
 
   /*  movies_by_ID.foreach(println)*/
     var ratings_temp = ratings.map { case (a, b, c, d, e) =>
@@ -30,7 +30,7 @@ class SimpleAnalytics() extends Serializable {
       .flatMapValues(iterable => iterable.toList)
 
     //ratings_temp.take(100)foreach(println)
-    ratings_ =  ratings_temp
+    ratings_ =  ratings_temp.partitionBy(ratingsPartitioner).persist()
     //ratings_.foreach(println)
 
     //ratings_mag.foreach(println)

@@ -12,8 +12,9 @@ import org.apache.spark.storage.StorageLevel.MEMORY_AND_DISK
 class Aggregator(sc: SparkContext) extends Serializable {
 
   private var state = null
-  private var partitioner: HashPartitioner = null
-
+  private var partitioner: HashPartitioner = new HashPartitioner(100)
+  var movies_rating :  RDD[(Int, (Double, (Int, String, List[String])))] = _
+  var movies_by_ID : RDD[(Int,(Int, String, List[String]))] = _
   /**
    * Use the initial ratings and titles to compute the average rating for each title.
    * The average rating for unrated titles is 0.0
@@ -26,6 +27,23 @@ class Aggregator(sc: SparkContext) extends Serializable {
             ratings: RDD[(Int, Int, Option[Double], Double, Int)],
             title: RDD[(Int, String, List[String])]
           ): Unit = {
+    movies_by_ID = title.groupBy(_._1).flatMapValues(iterable => iterable.toList).partitionBy(partitioner)
+
+    movies_rating = ratings
+      .groupBy(_._2)
+      .flatMapValues(iterable => iterable.toList)
+      .map{ case(a,(b,c,d,e,f)) => (a, e) }
+      .groupBy(_._1)
+      .mapValues(iterable => iterable.toList)
+      .mapValues { values => values.map(_._2).sum / values.map(_._2).length}
+      .join(movies_by_ID)
+
+
+      /*.map(m => (m._2,m._1)).join(movies_by_ID.map(r => (r._1,r._2._2)))*/
+    /*.mapValues{
+        case Iter(a,b,c,d,e) => d
+      }*/
+    /*grouped_movies.foreach(println)*/
 
 
   }
@@ -35,7 +53,10 @@ class Aggregator(sc: SparkContext) extends Serializable {
    *
    * @return The pairs of titles and ratings
    */
-  def getResult(): RDD[(String, Double)] = ???
+  def getResult(): RDD[(String, Double)] = {
+     var return_result = movies_rating.map{case (a,(b,(c,d,e))) => (d,b)}
+    return return_result
+  }
 
   /**
    * Compute the average rating across all (rated titles) that contain the
