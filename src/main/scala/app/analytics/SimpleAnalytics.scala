@@ -44,66 +44,37 @@ class SimpleAnalytics() extends Serializable {
 
 
 
-  def getNumberOfMoviesRatedEachYear: RDD[(Int, Int)] = {
+  def getNumberOfMoviesRatedEachYear:RDD[(Int, Int)] = {
     //ratings_mag.foreach(println)
-    var pipi : RDD[(Int, Int)] = ratings_
-      .groupBy(_._2._1)
-      .mapValues(_.size)
-      .sortByKey()
-    //pipi.foreach(print)
+    val reduce = ratings_.map { case (a, (b, (c, d, e, f, g))) => (a, b) }
+    reduce.take(20).foreach(println)
+    val result = reduce
+      .distinct()
+      .groupBy(_._2)
 
-    return pipi
+      .map{case (w, l) => (w, l.size)}
+    result.foreach(println)
+    return result
+
+
   }
 
   def getMostRatedMovieEachYear: RDD[(Int, String)]={
 
     /*ratings_.foreach(println)*/
     val reduce = ratings_.map {case(a,(b,(c,d,e,f,g))) => (a,b)}
-    reduce.take(2).foreach(println)
+    /*reduce.take(2).foreach(println)*/
     val result = reduce
       .groupBy(_._2)
-      .map{case (w, l) => (w,l.groupBy(identity).maxBy(_._2.size)._1._1)
-
-
+      .map{case (w, l) => (w,l.groupBy(identity).maxBy(g => (g._2.size,g._1._1))._1._1)
       }
-    /*result.take(20).foreach(println)
-    movies_by_ID.take(20).foreach(println)*/
-    val joined_movie = movies_by_ID.join(result)
-    joined_movie.foreach(println)
-    val result_ret = joined_movie.map{case (key,(movie,(movies_id))) => (key,movie._2)}
+
+    val joined_movie = result.map(m => (m._2,m._1)).join(movies_by_ID.map(r => (r._1,r._2._2)))
+
+    val result_ret = joined_movie.map{case (key,(year,movie_name)) => (year,movie_name)}
     result_ret.take(20)foreach println
     return result_ret
-    /*val resultRDD =  joined_movie.map { case (key, ()) => (key, value2) }*/
-    /*result_ret.take(20).foreach(println)*/
 
-
-
-
-
-
-
-
-
-
-
-    //println(ratings_.count(_.1))
-    /*var sorted = bang
-      .groupBy(_._2.)
-
-
-
-      sorted.foreach(println)*/
-      /*.mapValues(_._2)
-      */
-
-
-
-
-    /*var find_most = bang
-      .groupBy(_)*/
-
-      //.sortByKey()
-    //bang.foreach(print)
   }
 
 
@@ -111,24 +82,48 @@ class SimpleAnalytics() extends Serializable {
   def getMostRatedGenreEachYear: RDD[(Int, List[String])] =
     {
       val reduce = ratings_.map { case (a, (b, (c, d, e, f, g))) => (a, b) }
-      reduce.take(2).foreach(println)
+      /*reduce.take(2).foreach(println)*/
       val result = reduce
         .groupBy(_._2)
-        .map { case (w, l) => (w, l.groupBy(identity).maxBy(_._2.size)._1._1)
+        .map{case (w, l) => (w,l.groupBy(identity).maxBy(g => (g._2.size,g._1._1))._1._1)
 
 
         }
-      /*result.take(20).foreach(println)
-      movies_by_ID.take(20).foreach(println)*/
-      val joined_movie = movies_by_ID.join(result)
-      joined_movie.foreach(println)
-      val result_genre = joined_movie.map { case (key, (movie, (movies_id))) => (key, movie._3) }
-      result_genre.take(20) foreach println
+
+      val joined_movie = result.map(m => (m._2,m._1)).join(movies_by_ID.map(r => (r._1,r._2._3)))
+      /*joined_movie.foreach(println)*/
+      val result_genre = joined_movie.map { case (key, (year, movies_genre)) => (year, movies_genre) }
+      /*result_genre.take(20) foreach println*/
       return result_genre
     }
 
   // Note: if two genre has the same number of rating, return the first one based on lexicographical sorting on genre.
-  def getMostAndLeastRatedGenreAllTime: ((String, Int), (String, Int)) = ???
+  def getMostAndLeastRatedGenreAllTime: ((String,Int),(String,Int)) = {
+
+      val reduce = ratings_.map { case (a, (b, (c, d, e, f, g))) => (a, b) }
+      reduce.take(2).foreach(println)
+      val result = reduce
+        .groupBy(_._2.unary_+)
+        .map { case (w, l) => (w, l.groupBy(identity).maxBy(g => (g._2.size, g._1._1))._1._1)
+
+
+        }
+
+      val joined_movie = result.map(m => (m._2, m._1)).join(movies_by_ID.map(r => (r._1, r._2._3)))
+      /*joined_movie.foreach(println)*/
+      val result_genre = joined_movie.map { case (key, (year, movies_genre)) => movies_genre }
+     /* result_genre.take(20) foreach println*/
+      val grouped_genre = result_genre
+        .flatMap(x => x)
+        .groupBy(x=>x)
+        .mapValues(_.size)
+      val max_genre = grouped_genre.collect().maxBy(g => (g._2,g._1))
+      val min_genre = grouped_genre.collect().minBy(g => (g._2,g._1))
+      val  min_and_most = (min_genre,max_genre)
+      print(min_and_most)
+      return min_and_most
+
+  }
 
   /**
    * Filter the movies RDD having the required genres
@@ -138,7 +133,18 @@ class SimpleAnalytics() extends Serializable {
    * @return The RDD for the movies which are in the supplied genres
    */
   def getAllMoviesByGenre(movies: RDD[(Int, String, List[String])],
-                          requiredGenres: RDD[String]): RDD[String] = ???
+                          requiredGenres: RDD[String]): RDD[String] = {
+    /*movies.foreach(println)
+    requiredGenres.foreach(println)*/
+    val requiredGenresList = requiredGenres.collect().toList
+    val filtered_genre = movies.filter(_._3.exists(requiredGenresList.contains))
+    filtered_genre.foreach(println)
+    val take_movie = filtered_genre
+      .map{case (a,b,c) => b}
+    take_movie.foreach(println)
+
+    return take_movie
+  }
 
   /**
    * Filter the movies RDD having the required genres
@@ -152,7 +158,20 @@ class SimpleAnalytics() extends Serializable {
    */
   def getAllMoviesByGenre_usingBroadcast(movies: RDD[(Int, String, List[String])],
                                          requiredGenres: List[String],
-                                         broadcastCallback: List[String] => Broadcast[List[String]]): RDD[String] = ???
+                                         broadcastCallback: List[String] => Broadcast[List[String]]) :RDD[String] = {
+    val requiredGenresBroad = broadcastCallback(requiredGenres)
+
+    val filtered_genre = movies.filter(_._3.exists(requiredGenresBroad.value.contains))
+    filtered_genre.foreach(println)
+    val take_movie = filtered_genre
+      .map { case (a, b, c) => b }
+    take_movie.foreach(println)
+
+    return take_movie
+
+
+
+  }
 
 }
 

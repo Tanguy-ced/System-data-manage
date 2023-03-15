@@ -30,7 +30,7 @@ object Main {
     val analytics = new SimpleAnalytics()
     analytics.init(my_ratings,my_movies)
     val nb_movies = analytics.getNumberOfMoviesRatedEachYear
-    nb_movies.foreach(println)
+   /* nb_movies.foreach(println)*/
 
     //val a = 5
 

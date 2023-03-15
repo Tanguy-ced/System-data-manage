@@ -2096,7 +2096,7 @@ class MainTest {
 
     processor.init(ratingsLoader.load(), moviesLoader.load())
 
-    val res = processor.getNumberOfMoviesRatedEachYear
+    val res = processor.getMostRatedMovieEachYear
       .collect()
       .sortWith(_._1 <= _._1)
 
