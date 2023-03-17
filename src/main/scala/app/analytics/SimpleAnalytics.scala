@@ -72,7 +72,7 @@ class SimpleAnalytics() extends Serializable {
     val joined_movie = result.map(m => (m._2,m._1)).join(movies_by_ID.map(r => (r._1,r._2._2)))
 
     val result_ret = joined_movie.map{case (key,(year,movie_name)) => (year,movie_name)}
-    result_ret.take(20)foreach println
+    /*result_ret.take(20)foreach println*/
     return result_ret
 
   }
@@ -101,7 +101,7 @@ class SimpleAnalytics() extends Serializable {
   def getMostAndLeastRatedGenreAllTime: ((String,Int),(String,Int)) = {
 
       val reduce = ratings_.map { case (a, (b, (c, d, e, f, g))) => (a, b) }
-      reduce.take(2).foreach(println)
+      /*reduce.take(2).foreach(println)*/
       val result = reduce
         .groupBy(_._2.unary_+)
         .map { case (w, l) => (w, l.groupBy(identity).maxBy(g => (g._2.size, g._1._1))._1._1)

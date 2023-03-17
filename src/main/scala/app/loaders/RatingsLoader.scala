@@ -29,8 +29,8 @@ class RatingsLoader(sc : SparkContext, path : String) extends Serializable {
     //rdd_splited.take(2).foreach { x =>
       //x.foreach(println)
     //}
-    val old_rating: Option[Double] = None
-    val rdd_return = rdd_splited.map( x => (x(0).toInt, x(1).toInt, old_rating , x(2).toDouble, x(3).toInt))
+    /*val old_rating: Option[Double] = None*/
+    val rdd_return = rdd_splited.map( x => (x(0).toInt, x(1).toInt, None.asInstanceOf[Option[Double]] , x(2).toDouble, x(3).toInt))
 
     //val rdd_return = rdd_splited.map {
       //case x if x.length == 5 => (x(0).toInt, x(1).toInt, x(2).toDouble , x(3).toDouble, x(4).toInt)

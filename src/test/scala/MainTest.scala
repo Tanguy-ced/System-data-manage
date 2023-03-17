@@ -2658,6 +2658,7 @@ class MainTest {
 
     aggregator.init(ratingsLoader.load(), moviesLoader.load())
 
+
     assert((aggregator.getKeywordQueryResult(List("Fantasy")) - 3.833).abs < 0.01)
     assert((aggregator.getKeywordQueryResult(List("Fantasy", "Sci-Fi")) - 3.668).abs < 0.01)
     assert((aggregator.getKeywordQueryResult(List("Fantasy", "Comedy")) - 3.9294).abs < 0.01)
