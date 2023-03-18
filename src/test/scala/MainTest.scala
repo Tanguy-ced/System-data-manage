@@ -2992,7 +2992,6 @@ class MainTest {
       .collect()
       .map(t => (t._1, t._2.sortWith((t1, t2) => t1.toString() <= t2.toString())))
       .sortWith((t1, t2) => t1._1.toString() <= t2._1.toString())
-
     val expected = Array(
       "(Vector(30680, 44455),List((1,Toy Story (1995),List(Adventure, Animation, Children, Comedy, Fantasy)), (2116,Lord of the Rings, The (1978),List(Adventure, Animation, Children, Fantasy)), (3114,Toy Story 2 (1999),List(Adventure, Animation, Children, Comedy, Fantasy)), (78499,Toy Story 3 (2010),List(Adventure, Animation, Children, Comedy, Fantasy, IMAX))))",
       "(Vector(59702, 13197),List((1196,Star Wars: Episode V - The Empire Strikes Back (1980),List(Action, Adventure, Sci-Fi)), (1210,Star Wars: Episode VI - Return of the Jedi (1983),List(Action, Adventure, Sci-Fi)), (122886,Star Wars: Episode VII - The Force Awakens (2015),List(Action, Adventure, Fantasy, Sci-Fi, IMAX)), (166528,Rogue One: A Star Wars Story (2016),List(Action, Adventure, Fantasy, Sci-Fi)), (179819,Star Wars: The Last Jedi (2017),List(Action, Adventure, Fantasy, Sci-Fi)), (260,Star Wars: Episode IV - A New Hope (1977),List(Action, Adventure, Sci-Fi)), (2628,Star Wars: Episode I - The Phantom Menace (1999),List(Action, Adventure, Sci-Fi)), (33493,Star Wars: Episode III - Revenge of the Sith (2005),List(Action, Adventure, Sci-Fi)), (5378,Star Wars: Episode II - Attack of the Clones (2002),List(Action, Adventure, Sci-Fi, IMAX)), (72998,Avatar (2009),List(Action, Adventure, Sci-Fi, IMAX))))",
@@ -3011,13 +3010,13 @@ class MainTest {
     val queries = MoviesLoader
       .load()
       .map(x => x._3)
-
+    queries.foreach(println)
     val res = lsh
       .lookup(queries)
       .collect()
       .map(t => (t._1, t._2.sortWith((t1, t2) => t1.toString() <= t2.toString())))
       .sortWith((t1, t2) => t1._1.toString() <= t2._1.toString())
-
+    res.foreach(println)
     val expected = Array(
       "(List(Action, Adventure, Drama, Fantasy),List((4993,Lord of the Rings: The Fellowship of the Ring, The (2001),List(Adventure, Fantasy)), (5952,Lord of the Rings: The Two Towers, The (2002),List(Adventure, Fantasy)), (7153,Lord of the Rings: The Return of the King, The (2003),List(Action, Adventure, Drama, Fantasy))))",
       "(List(Action, Adventure, Fantasy, Sci-Fi),List((1196,Star Wars: Episode V - The Empire Strikes Back (1980),List(Action, Adventure, Sci-Fi)), (1210,Star Wars: Episode VI - Return of the Jedi (1983),List(Action, Adventure, Sci-Fi)), (122886,Star Wars: Episode VII - The Force Awakens (2015),List(Action, Adventure, Fantasy, Sci-Fi, IMAX)), (166528,Rogue One: A Star Wars Story (2016),List(Action, Adventure, Fantasy, Sci-Fi)), (179819,Star Wars: The Last Jedi (2017),List(Action, Adventure, Fantasy, Sci-Fi)), (260,Star Wars: Episode IV - A New Hope (1977),List(Action, Adventure, Sci-Fi)), (2628,Star Wars: Episode I - The Phantom Menace (1999),List(Action, Adventure, Sci-Fi)), (33493,Star Wars: Episode III - Revenge of the Sith (2005),List(Action, Adventure, Sci-Fi)), (5378,Star Wars: Episode II - Attack of the Clones (2002),List(Action, Adventure, Sci-Fi, IMAX)), (72998,Avatar (2009),List(Action, Adventure, Sci-Fi, IMAX))))",
@@ -3027,6 +3026,7 @@ class MainTest {
       "(List(Action, Adventure, Sci-Fi),List((1196,Star Wars: Episode V - The Empire Strikes Back (1980),List(Action, Adventure, Sci-Fi)), (1210,Star Wars: Episode VI - Return of the Jedi (1983),List(Action, Adventure, Sci-Fi)), (122886,Star Wars: Episode VII - The Force Awakens (2015),List(Action, Adventure, Fantasy, Sci-Fi, IMAX)), (166528,Rogue One: A Star Wars Story (2016),List(Action, Adventure, Fantasy, Sci-Fi)), (179819,Star Wars: The Last Jedi (2017),List(Action, Adventure, Fantasy, Sci-Fi)), (260,Star Wars: Episode IV - A New Hope (1977),List(Action, Adventure, Sci-Fi)), (2628,Star Wars: Episode I - The Phantom Menace (1999),List(Action, Adventure, Sci-Fi)), (33493,Star Wars: Episode III - Revenge of the Sith (2005),List(Action, Adventure, Sci-Fi)), (5378,Star Wars: Episode II - Attack of the Clones (2002),List(Action, Adventure, Sci-Fi, IMAX)), (72998,Avatar (2009),List(Action, Adventure, Sci-Fi, IMAX))))",
       "(List(Action, Adventure, Sci-Fi),List((1196,Star Wars: Episode V - The Empire Strikes Back (1980),List(Action, Adventure, Sci-Fi)), (1210,Star Wars: Episode VI - Return of the Jedi (1983),List(Action, Adventure, Sci-Fi)), (122886,Star Wars: Episode VII - The Force Awakens (2015),List(Action, Adventure, Fantasy, Sci-Fi, IMAX)), (166528,Rogue One: A Star Wars Story (2016),List(Action, Adventure, Fantasy, Sci-Fi)), (179819,Star Wars: The Last Jedi (2017),List(Action, Adventure, Fantasy, Sci-Fi)), (260,Star Wars: Episode IV - A New Hope (1977),List(Action, Adventure, Sci-Fi)), (2628,Star Wars: Episode I - The Phantom Menace (1999),List(Action, Adventure, Sci-Fi)), (33493,Star Wars: Episode III - Revenge of the Sith (2005),List(Action, Adventure, Sci-Fi)), (5378,Star Wars: Episode II - Attack of the Clones (2002),List(Action, Adventure, Sci-Fi, IMAX)), (72998,Avatar (2009),List(Action, Adventure, Sci-Fi, IMAX))))"
     )
+
 
     res.zip(expected).foreach(t => assert(t._1.toString() == t._2))
   }
@@ -3068,7 +3068,8 @@ class MainTest {
       .filter(x => x._2.filter(y =>
         x._1.size == y._3.size && x._1.zip(y._3).filter(a => a._1 != a._2).size == 0
       ).size != 0)
-
+    println(res.count())
+    println(moviesLoader.load().count())
     assert(res.count() == moviesLoader.load().count())
   }
 
