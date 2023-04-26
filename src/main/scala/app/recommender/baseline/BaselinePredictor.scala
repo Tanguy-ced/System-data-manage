@@ -9,48 +9,49 @@ class BaselinePredictor() extends Serializable {
   private var movies_averaged_deviated : RDD[(Int, Iterable[(Int, Option[Double], Double, Int,Double)], Double)] = _
   private var movies_average_deviation :RDD[(Int, Double)] = _
   def init(ratingsRDD: RDD[(Int, Int, Option[Double], Double, Int)]): Unit = {
-
-    var sorted_by_user = ratingsRDD
-      .groupBy(_._1)
-      .map { case (a, b) => (a, b, b.map(_._4).sum / b.size) }
-    /*sorted_by_user.take(3).foreach(println)*/
-    movies_averaged = sorted_by_user
-      .map { case (user, iterable, average_overall) =>
-        val updatedIterable = iterable.map {
-          case (a, b, c, rate, e) =>
-            val updated_rate = rate - average_overall
-            (b, c, updated_rate, e)
+    println("exiting baseline init")
+      var sorted_by_user = ratingsRDD
+        .groupBy(_._1)
+        .map { case (a, b) => (a, b, b.map(_._4).sum / b.size) }
+      /*sorted_by_user.take(3).foreach(println)*/
+      movies_averaged = sorted_by_user
+        .map { case (user, iterable, average_overall) =>
+          val updatedIterable = iterable.map {
+            case (a, b, c, rate, e) =>
+              val updated_rate = rate - average_overall
+              (b, c, updated_rate, e)
+          }
+          (user, updatedIterable, average_overall)
         }
-        (user, updatedIterable, average_overall)
-      }
-    /*movies_averaged.take(3).foreach(println)*/
-    movies_averaged_deviated = movies_averaged
-      .map { case (user, iterable, average_over) =>
-        val update_deviation = iterable.map {
-          case (movie_id, old, new_ave, time) =>
-            val scale = new_ave match {
-              case new_ave if new_ave > 0 => 5 - average_over
-              case new_ave if new_ave < 0 => average_over - 1
-              case new_ave if new_ave == 0 => 1
-            }
-            /*println(scale)*/
-            val std = (new_ave / scale)
-            (movie_id, old, new_ave, time, std)
+      /*movies_averaged.take(3).foreach(println)*/
+      movies_averaged_deviated = movies_averaged
+        .map { case (user, iterable, average_over) =>
+          val update_deviation = iterable.map {
+            case (movie_id, old, new_ave, time) =>
+              val scale = new_ave match {
+                case new_ave if new_ave > 0 => 5 - average_over
+                case new_ave if new_ave < 0 => average_over - 1
+                case new_ave if new_ave == 0 => 1
+              }
+              /*println(scale)*/
+              val std = (new_ave / scale)
+              (movie_id, old, new_ave, time, std)
+          }
+          (user, update_deviation, average_over)
         }
-        (user, update_deviation, average_over)
-      }
-    /*movies_averaged_deviated.take(3).foreach(println)*/
-    movies_average_deviation = movies_averaged_deviated
-      .map { case (user, iterable, average_) => (user, iterable) }
-      .flatMapValues(iterable => iterable.toList)
-      .map { case (a, b) => b }
-      .groupBy(_._1)
-      .map { case (movie, iterable) =>
-        val number_rating = iterable.size
-        val overall_ave = (iterable.map(_._5).sum / number_rating)
-        (movie, overall_ave)
-      }
-    /*movies_average_deviation.take(5).foreach(println)*/
+      /*movies_averaged_deviated.take(3).foreach(println)*/
+      movies_average_deviation = movies_averaged_deviated
+        .map { case (user, iterable, average_) => (user, iterable) }
+        .flatMapValues(iterable => iterable.toList)
+        .map { case (a, b) => b }
+        .groupBy(_._1)
+        .map { case (movie, iterable) =>
+          val number_rating = iterable.size
+          val overall_ave = (iterable.map(_._5).sum / number_rating)
+          (movie, overall_ave)
+        }
+      /*movies_average_deviation.take(5).foreach(println)*/
+    println("exiting baseline init")
 
   }
       /*.flatMapValues(iterable => iterable.toList)*/
@@ -92,7 +93,7 @@ class BaselinePredictor() extends Serializable {
     println("average user : ")*/
 
     var result = average_user + right_result
-    println(result)
+    /*println(result)*/
     return result
   }
 }

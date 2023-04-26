@@ -14,14 +14,14 @@ import scala.reflect.ClassTag
 class LSHIndex(data: RDD[(Int, String, List[String])], seed : IndexedSeq[Int]) extends Serializable {
 
   private val minhash = new MinHash(seed)
+  var data_copy = data
   val yallah : RDD[(IndexedSeq[Int], List[String])] = hash(data.map(_._3))
-  val signature_computed: RDD[(List[String], Int, String ,IndexedSeq[Int])] = data
+  val signature_computed: RDD[(List[String], Int, String ,IndexedSeq[Int])] = data_copy
     .map(m => (m._3,m)).join(yallah.map(r=> (r._2,r._1)))
     .map{case (a,((b,c,d),e)) => (a,b,c,e)}
   var buckets : RDD[(IndexedSeq[Int], List[(Int, String, List[String])])]=signature_computed
     .distinct()
     .groupBy(_._4)
-
     .flatMapValues(iterable => iterable.toList)
     .map { case (w, (attrib, id, title, ind)) => (w, (id, title, attrib)) }
     .groupByKey()
@@ -60,11 +60,11 @@ class LSHIndex(data: RDD[(Int, String, List[String])], seed : IndexedSeq[Int]) e
    */
   def lookup[T: ClassTag](queries: RDD[(IndexedSeq[Int], T)]):RDD[(IndexedSeq[Int],T, List[(Int, String, List[String])])] = {
 
-    println("the first key is ")
-    queries.foreach(println)
-    println("make space for the buckets ")
-    buckets.foreach(println)
-    println("space made ")
+   /* println("the first key is ")*/
+    /*queries.foreach(println)*/
+    /*println("make space for the buckets ")*/
+    /*buckets.foreach(println)*/
+    /*println("space made ")*/
     var looked_up = buckets
       .join(queries)
       .map { case (key, (bucket, payload)) => (key,payload, bucket) }
@@ -74,9 +74,9 @@ class LSHIndex(data: RDD[(Int, String, List[String])], seed : IndexedSeq[Int]) e
       /*.map { case (key, ( payload, bucket)) => (key,payload, bucket) }*/*/
       /*.distinct()*/
 
-    println("selected movies")
-    looked_up.foreach(println)
-    println("Pas mal bg")
+    /*println("selected movies")*/
+    /*looked_up.foreach(println)
+    println("Pas mal bg")*/
       /*.map{case (a)}*/
       /*.groupBy(_._1)
       .flatMapValues(iterable => iterable.toList)

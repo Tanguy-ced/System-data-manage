@@ -12,7 +12,7 @@ object Main {
   def main(args: Array[String]) {
     val conf = new SparkConf().setAppName("app").setMaster("local[*]")
     val sc = SparkContext.getOrCreate(conf)
-
+    sc.setCheckpointDir("target")
     val Movies = new MoviesLoader(sc, "/movies_small.csv");
     val my_movies = Movies
       .load()

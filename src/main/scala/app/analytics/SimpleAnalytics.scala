@@ -47,13 +47,13 @@ class SimpleAnalytics() extends Serializable {
   def getNumberOfMoviesRatedEachYear:RDD[(Int, Int)] = {
     //ratings_mag.foreach(println)
     val reduce = ratings_.map { case (a, (b, (c, d, e, f, g))) => (a, b) }
-    reduce.take(20).foreach(println)
+    /*reduce.take(20).foreach(println)*/
     val result = reduce
       .distinct()
       .groupBy(_._2)
 
       .map{case (w, l) => (w, l.size)}
-    result.foreach(println)
+    /*result.foreach(println)*/
     return result
 
 
@@ -120,7 +120,7 @@ class SimpleAnalytics() extends Serializable {
       val max_genre = grouped_genre.collect().maxBy(g => (g._2,g._1))
       val min_genre = grouped_genre.collect().minBy(g => (g._2,g._1))
       val  min_and_most = (min_genre,max_genre)
-      print(min_and_most)
+      /*print(min_and_most)*/
       return min_and_most
 
   }
@@ -138,10 +138,10 @@ class SimpleAnalytics() extends Serializable {
     requiredGenres.foreach(println)*/
     val requiredGenresList = requiredGenres.collect().toList
     val filtered_genre = movies.filter(_._3.exists(requiredGenresList.contains))
-    filtered_genre.foreach(println)
+    /*filtered_genre.foreach(println)*/
     val take_movie = filtered_genre
       .map{case (a,b,c) => b}
-    take_movie.foreach(println)
+    /*take_movie.foreach(println)*/
 
     return take_movie
   }

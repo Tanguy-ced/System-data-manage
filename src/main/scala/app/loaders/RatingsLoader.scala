@@ -10,7 +10,7 @@ import org.apache.spark.rdd.RDD
  * @param path The path for the input file
  */
 class RatingsLoader(sc : SparkContext, path : String) extends Serializable {
-
+  sc.setCheckpointDir("target")
 
 
   /**
@@ -26,19 +26,9 @@ class RatingsLoader(sc : SparkContext, path : String) extends Serializable {
     val rdd_splited = {
       rdd.map(line => line.split("\\|"))
     }
-    //rdd_splited.take(2).foreach { x =>
-      //x.foreach(println)
-    //}
-    /*val old_rating: Option[Double] = None*/
     val rdd_return = rdd_splited.map( x => (x(0).toInt, x(1).toInt, None.asInstanceOf[Option[Double]] , x(2).toDouble, x(3).toInt))
 
-    //val rdd_return = rdd_splited.map {
-      //case x if x.length == 5 => (x(0).toInt, x(1).toInt, x(2).toDouble , x(3).toDouble, x(4).toInt)
-      //case x if x.length == 4 => (x(0).toInt, x(1).toInt, Option[Double]   , x(2).toDouble, x(3).toInt)
-
-    //}
     return rdd_return
-    //(x => (x(0).toInt, x(1).toInt, Option[Double]: Double = x.length match {case some(s) => x(2) case None => None} , x(3).toDouble, x(4).toInt)
 
 
   }

@@ -23,28 +23,13 @@ class MoviesLoader(sc: SparkContext, path: String) extends Serializable {
     val file = path_for_data + path
     val new_rdd = sc.textFile(file)
     val rdd = new_rdd.map(_.replaceAll("\"", ""))
-
     val rdd_splited = {
       rdd.map(line => line.split("\\|"))
     }
-    //rdd_splited.take(2).foreach { x =>
-      //x.foreach(println)
-    //}
+
     val rdd_return : RDD[( Int, String, List[String])] = rdd_splited.map(x => (x(0).toInt, x(1), x.slice(2 , x.length).toList))
     return rdd_return
-    //val rdd_return = rdd_splited.map( line  => (Int, String, List(String)))
 
-    //return rdd_return
-    //val tupleRDD : RDD[(Int, String, List[String])] = sc.parallelize(List(rdd))
-
-    //tupleRDD.foreach(println)
-    //return tupleRDD
-
-
-    //splited.foreach(x => println(x))
-
-
-    //rdd.foreach(x => println(x))
   }
 }
 
