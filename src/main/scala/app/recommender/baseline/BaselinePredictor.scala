@@ -58,7 +58,7 @@ class BaselinePredictor() extends Serializable {
 
   def predict(userId: Int, movieId: Int): Double = {
     /*println("NEEEEEXT")*/
-    var user_data = movies_averaged_deviated
+    /*var user_data = movies_averaged_deviated
       .filter{case (user_id,_,_)  => user_id == userId}
     var movie_data = movies_average_deviation
       .filter { case (movie_id, _) => movie_id == movieId }
@@ -74,9 +74,7 @@ class BaselinePredictor() extends Serializable {
     var movie_average_dev = movie_data
       .map(_._2)
       .collect()(0)
-    /*user_data.foreach(println)
-    movie_data.foreach(println)
-    pop_std_mov.foreach(println)*/
+
 
     var normalized = average_user + movie_average_dev
 
@@ -94,6 +92,39 @@ class BaselinePredictor() extends Serializable {
 
     var result = average_user + right_result
     /*println(result)*/
+    return result*/
+    // Get user's average rating
+    val average_user = movies_averaged_deviated
+      .filter { case (user_id, _, _) => user_id == userId }
+      .map { case (_, _, average) => average }
+      .first()
+
+    // Get movie's average deviation
+    val movie_average_dev = movies_average_deviation
+      .filter { case (movie_id, _) => movie_id == movieId }
+      .map { case (_, dev) => dev }
+      .first()
+
+    // Get standard deviation of movie ratings for user
+    val pop_std_mov = movies_averaged_deviated
+      .filter { case (user_id, _, _) => user_id == userId }
+      .flatMap { case (_, iterable, _) => iterable.map { case (_, _, _, _, std) => std } }
+      .first()
+
+    // Normalize the deviation
+    val normalized = average_user + movie_average_dev
+
+    // Calculate the scaler
+    val scaler = math.signum(normalized - average_user) match {
+      case 1 => 5 - average_user
+      case -1 => average_user - 1
+      case _ => 1
+    }
+
+    // Calculate the final result
+    val result = average_user + scaler * movie_average_dev
+
     return result
+
   }
 }
