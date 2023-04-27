@@ -43,11 +43,9 @@ class CollaborativeFiltering(rank: Int,
     }.cache()
 
     // Partition the data and increase parallelism
-    val numPartitions = 10
-    val parallelism = 20
-    val partitionedRates = rates.repartition(numPartitions)
+
     println("entering collab init")
-    model = ALS.train(partitionedRates, rank, maxIterations, regularizationParameter, parallelism, seed)
+    model = ALS.train(rates, rank, maxIterations, regularizationParameter, n_parallel, seed)
     println("exiting collab init")
     // Extract the user-movie pairs for prediction
     usersProducts = rates.map { case Rating(user, movie, rate) =>

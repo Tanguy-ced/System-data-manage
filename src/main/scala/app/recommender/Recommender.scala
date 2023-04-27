@@ -31,7 +31,6 @@ class Recommender(sc: SparkContext,
     val res = nn_lookup
       .lookup(query)
 
-
     val user_movie = res.flatMap(x => {
       val list = x._2
       for (elem <- list) yield (userId, elem._1)
