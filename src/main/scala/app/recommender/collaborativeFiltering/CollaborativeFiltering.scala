@@ -44,7 +44,7 @@ class CollaborativeFiltering(rank: Int,
 
     // Partition the data and increase parallelism
     val numPartitions = 10
-    val parallelism = 4
+    val parallelism = 20
     val partitionedRates = rates.repartition(numPartitions)
     println("entering collab init")
     model = ALS.train(partitionedRates, rank, maxIterations, regularizationParameter, parallelism, seed)
