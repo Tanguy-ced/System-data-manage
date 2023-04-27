@@ -27,16 +27,10 @@ class Recommender(sc: SparkContext,
   def recommendBaseline(userId: Int, genre: List[String], K: Int): List[(Int, Double)] = {
 
     var query = sc.parallelize(List(genre))
-    /*.map(line => line.split(",").toList)
-    .flatMap(x=>x.flatMap(y => y))
-    .collect()
-    .toList*/
-    /*query.foreach(println)*/
+
     val res = nn_lookup
       .lookup(query)
-    /*.filter(x => x._2.filter(y =>
-      x._1.size == y._3.size && x._1.zip(y._3).filter(a => a._1 != a._2).size == 0
-    ).size != 0)*/
+
 
     val user_movie = res.flatMap(x => {
       val list = x._2
