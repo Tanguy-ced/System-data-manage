@@ -2046,7 +2046,7 @@ class MainTest {
     val res = processor.getNumberOfMoviesRatedEachYear
       .collect()
       .sortWith(_._1 <= _._1)
-
+    print(res)
     val expected = Array(
       (1996, 607),
       (1997, 649),

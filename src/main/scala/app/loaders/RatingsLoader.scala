@@ -19,6 +19,7 @@ class RatingsLoader(sc : SparkContext, path : String) extends Serializable {
    * @return The RDD for the given ratingsRDD[(Int, Int, Option[Double], Double, Int)]
    */
   def load():RDD[(Int, Int, Option[Double], Double, Int)]  = {
+
     val path_for_data = "src/main/resources"
     val file = path_for_data + path
     val new_rdd = sc.textFile(file)
@@ -27,7 +28,6 @@ class RatingsLoader(sc : SparkContext, path : String) extends Serializable {
       rdd.map(line => line.split("\\|"))
     }
     val rdd_return = rdd_splited.map( x => (x(0).toInt, x(1).toInt, None.asInstanceOf[Option[Double]] , x(2).toDouble, x(3).toInt))
-
     return rdd_return
 
 

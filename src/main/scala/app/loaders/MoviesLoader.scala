@@ -19,6 +19,7 @@ class MoviesLoader(sc: SparkContext, path: String) extends Serializable {
    * @return The RDD for the given titles RDD[(Int, String, List[String])] =
    */
   def load(): RDD[( Int, String, List[String])]   ={
+
     val path_for_data = "src/main/resources"
     val file = path_for_data + path
     val new_rdd = sc.textFile(file)
@@ -28,6 +29,7 @@ class MoviesLoader(sc: SparkContext, path: String) extends Serializable {
     }
 
     val rdd_return : RDD[( Int, String, List[String])] = rdd_splited.map(x => (x(0).toInt, x(1), x.slice(2 , x.length).toList))
+
     return rdd_return
 
   }
