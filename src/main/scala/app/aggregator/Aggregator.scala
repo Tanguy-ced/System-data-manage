@@ -33,14 +33,23 @@ class Aggregator(sc: SparkContext) extends Serializable {
     ratings_data = ratings
     movies_by_ID = title.groupBy(_._1).flatMapValues(iterable => iterable.toList).partitionBy(partitioner)
 
-    movies_rating = ratings
+    var temp_movies_rating = ratings
       .groupBy(_._2)
       .flatMapValues(iterable => iterable.toList)
       .map{ case(a,(b,c,d,e,f)) => (a, e) }
       .groupBy(_._1)
       .mapValues(iterable => iterable.toList)
       .mapValues { values => values.map(_._2).sum / values.map(_._2).length}
-      .join(movies_by_ID)
+
+    val array_rates = temp_movies_rating.collect()
+    val col2Values = movies_by_ID
+      .filter( x=> !array_rates.contains(x._2._1))
+
+    movies_rating = temp_movies_rating.join(col2Values)
+
+      /*.filter( x=> col2Values.contains(x._1))
+      .join(movies_by_ID)*/
+
 
 
       /*.map(m => (m._2,m._1)).join(movies_by_ID.map(r => (r._1,r._2._2)))*/
