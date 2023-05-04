@@ -22,13 +22,13 @@ class RatingsLoader(sc : SparkContext, path : String) extends Serializable {
 
     val path_for_data = "src/main/resources"
     val file = path_for_data + path
-    val new_rdd = sc.textFile(file)
-    val rdd = new_rdd.map(_.replaceAll("\"", ""))
+    val load_file = sc.textFile(file)
+    val replace_sep = load_file.map(_.replaceAll("\"", ""))
     val rdd_splited = {
-      rdd.map(line => line.split("\\|"))
+      replace_sep.map(line => line.split("\\|"))
     }
-    val rdd_return = rdd_splited.map( x => (x(0).toInt, x(1).toInt, None.asInstanceOf[Option[Double]] , x(2).toDouble, x(3).toInt))
-    return rdd_return
+    val ratings_loaded = rdd_splited.map( x => (x(0).toInt, x(1).toInt, None.asInstanceOf[Option[Double]] , x(2).toDouble, x(3).toInt))
+    return ratings_loaded
 
 
   }

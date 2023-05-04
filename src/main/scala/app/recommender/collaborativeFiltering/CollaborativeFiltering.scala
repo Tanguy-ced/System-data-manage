@@ -40,7 +40,7 @@ class CollaborativeFiltering(rank: Int,
     // Convert the input RDD to Rating objects and cache the resulting RDD
     val rates = ratingsRDD.map { case (user, movie, old_rate, rate, time) =>
       Rating(user.toInt, movie.toInt, rate.toDouble)
-    }.cache()
+    }
 
     // Partition the data and increase parallelism
 
@@ -53,8 +53,6 @@ class CollaborativeFiltering(rank: Int,
     }
 
     // Unpersist the cached RDDs to free up memory
-    rates.unpersist()
-    ratingsRDD.unpersist()
   }
 
   def predict(userId: Int, movieId: Int): Double = {

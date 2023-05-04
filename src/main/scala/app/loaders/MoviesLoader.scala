@@ -22,15 +22,15 @@ class MoviesLoader(sc: SparkContext, path: String) extends Serializable {
 
     val path_for_data = "src/main/resources"
     val file = path_for_data + path
-    val new_rdd = sc.textFile(file)
-    val rdd = new_rdd.map(_.replaceAll("\"", ""))
+    val load_file = sc.textFile(file)
+    val replace_sep = load_file.map(_.replaceAll("\"", ""))
     val rdd_splited = {
-      rdd.map(line => line.split("\\|"))
+      replace_sep.map(line => line.split("\\|"))
     }
+    /* Here I convert the string to the desired format*/
+    val movies_loaded : RDD[( Int, String, List[String])] = rdd_splited.map(x => (x(0).toInt, x(1), x.slice(2 , x.length).toList))
 
-    val rdd_return : RDD[( Int, String, List[String])] = rdd_splited.map(x => (x(0).toInt, x(1), x.slice(2 , x.length).toList))
-
-    return rdd_return
+    return movies_loaded
 
   }
 }

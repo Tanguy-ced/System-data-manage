@@ -21,8 +21,10 @@ class SimpleAnalytics() extends Serializable {
     movies_by_ID = movie.groupBy(_._1).flatMapValues(iterable => iterable.toList).partitionBy(moviesPartitioner).persist()
 
   /*  movies_by_ID.foreach(println)*/
+
     var ratings_temp = ratings.map { case (a, b, c, d, e) =>
-      (a, b, c, d, (e / 31557600) + 1970)
+      val dt = new DateTime(e * 1000L) // convert seconds to milliseconds and create a DateTime object
+      (a, b, c, d, dt.getYear) // extract the year from the DateTime object
     }
       .groupBy(_._5)
       .flatMapValues(iterable => iterable.toList)
