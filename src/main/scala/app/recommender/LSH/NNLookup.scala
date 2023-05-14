@@ -17,19 +17,17 @@ class NNLookup(lshIndex: LSHIndex) extends Serializable {
    */
   /*: RDD[(List[String], List[(Int, String, List[String])])]*/
   def lookup(queries: RDD[List[String]]): RDD[(List[String], List[(Int, String, List[String])])] = {
-    /*println("types to collect")*/
+
+    // compute the signature of the queries
     var signature_calc = lshIndex.hash(queries)
 
+    // Use the lookup fonction to get the grouping according to the query
     var to_return = lshIndex.lookup(signature_calc)
       .map{case(a,b,c) =>(b,c)}
     if (to_return.isEmpty()){
       to_return = queries
         .map{case(a) => (a,Nil)}
-
     }
-
     return to_return
-
-
   }
 }

@@ -15,10 +15,12 @@ class LSHIndex(data: RDD[(Int, String, List[String])], seed : IndexedSeq[Int]) e
 
   private val minhash = new MinHash(seed)
   var data_copy = data
-  val yallah : RDD[(IndexedSeq[Int], List[String])] = hash(data.map(_._3))
+  // Associate to each elements of the dataset the signature computed and stored in hash_table
+  val hash_table : RDD[(IndexedSeq[Int], List[String])] = hash(data.map(_._3))
   val signature_computed: RDD[(List[String], Int, String ,IndexedSeq[Int])] = data_copy
-    .map(m => (m._3,m)).join(yallah.map(r=> (r._2,r._1)))
+    .map(m => (m._3,m)).join(hash_table.map(r=> (r._2,r._1)))
     .map{case (a,((b,c,d),e)) => (a,b,c,e)}
+  // Filter the element appearing multiple time and transform into the expected structure
   var buckets : RDD[(IndexedSeq[Int], List[(Int, String, List[String])])]=signature_computed
     .distinct()
     .groupBy(_._4)
@@ -28,8 +30,7 @@ class LSHIndex(data: RDD[(Int, String, List[String])], seed : IndexedSeq[Int]) e
     .mapValues(_.toList)
 
 
-  /*buckets.foreach(println)*/
-  /*.map(m => (m._2,m._1)).join(movies_by_ID.map(r => (r._1,r._2._2)))*/
+
   /**
    * Hash function for an RDD of queries.
    *
@@ -37,6 +38,7 @@ class LSHIndex(data: RDD[(Int, String, List[String])], seed : IndexedSeq[Int]) e
    * @return The RDD of (signature, keyword list) pairs
    */
   def hash(input: RDD[List[String]]) : RDD[(IndexedSeq[Int], List[String])] = {
+    //Hashing function
     input.map(x => (minhash.hash(x), x))
   }
 
@@ -46,7 +48,7 @@ class LSHIndex(data: RDD[(Int, String, List[String])], seed : IndexedSeq[Int]) e
    * @return Data structure of LSH index
    */
   def getBuckets():  RDD[(IndexedSeq[Int], List[(Int, String, List[String])])] = {
-
+  // Get the data structure with the signature
     return buckets
   }
 
@@ -60,34 +62,13 @@ class LSHIndex(data: RDD[(Int, String, List[String])], seed : IndexedSeq[Int]) e
    */
   def lookup[T: ClassTag](queries: RDD[(IndexedSeq[Int], T)]):RDD[(IndexedSeq[Int],T, List[(Int, String, List[String])])] = {
 
-   /* println("the first key is ")*/
-    /*queries.foreach(println)*/
-    /*println("make space for the buckets ")*/
-    /*buckets.foreach(println)*/
-    /*println("space made ")*/
+    // Return elements matching the query
+
     var looked_up = buckets
       .join(queries)
       .map { case (key, (bucket, payload)) => (key,payload, bucket) }
 
-    /*queries
-      .join(buckets)
-      /*.map { case (key, ( payload, bucket)) => (key,payload, bucket) }*/*/
-      /*.distinct()*/
-
-    /*println("selected movies")*/
-    /*looked_up.foreach(println)
-    println("Pas mal bg")*/
-      /*.map{case (a)}*/
-      /*.groupBy(_._1)
-      .flatMapValues(iterable => iterable.toList)
-      .map { case (w, (attrib, id, title, ind)) => (w, (id, title, attrib)) }
-      .groupByKey()
-      .mapValues(_.toList)*/
-    /*.map{case(a,(attribute,id,name,signa)) => (a)}*/
-
-    /*return looked_up*/
     return looked_up
-    /*print("collected_movies")*/
 
 
   }
