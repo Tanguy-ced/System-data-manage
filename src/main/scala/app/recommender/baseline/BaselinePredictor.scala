@@ -75,7 +75,6 @@ class BaselinePredictor() extends Serializable {
 
     // Normalize the deviation
     val normalized = average_user + movie_average_dev
-    println(normalized)
     // Calculate the scaler
     val scaler = math.signum(normalized - average_user) match {
       case 1 => 5 - average_user
