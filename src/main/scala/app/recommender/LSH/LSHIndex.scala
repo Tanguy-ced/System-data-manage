@@ -48,7 +48,7 @@ class LSHIndex(data: RDD[(Int, String, List[String])], seed : IndexedSeq[Int]) e
    * @return Data structure of LSH index
    */
   def getBuckets():  RDD[(IndexedSeq[Int], List[(Int, String, List[String])])] = {
-  // Get the data structure with the signature
+    // Get the data structure with the signature
     return buckets
   }
 
@@ -73,4 +73,3 @@ class LSHIndex(data: RDD[(Int, String, List[String])], seed : IndexedSeq[Int]) e
 
   }
 }
-/*RDD[(IndexedSeq[Int], T, List[(Int, String, List[String])])]*/

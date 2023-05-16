@@ -31,3 +31,4 @@ class NNLookup(lshIndex: LSHIndex) extends Serializable {
     return to_return
   }
 }
+

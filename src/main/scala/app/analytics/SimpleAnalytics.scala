@@ -76,51 +76,51 @@ class SimpleAnalytics() extends Serializable {
   }
 
   def getMostRatedGenreEachYear: RDD[(Int, List[String])] =
-    {
-      // The same process as before but we return the list of genre instead of the name of the movie
-      val reduce = ratings_.map { case (a, (b, (c, d, e, f, g))) => (a, b) }
+  {
+    // The same process as before but we return the list of genre instead of the name of the movie
+    val reduce = ratings_.map { case (a, (b, (c, d, e, f, g))) => (a, b) }
 
 
-      val result = reduce
-        .groupBy(_._2)
-        .map{case (w, l) => (w,l.groupBy(identity).maxBy(g => (g._2.size,g._1._1))._1._1)
-        }
+    val result = reduce
+      .groupBy(_._2)
+      .map{case (w, l) => (w,l.groupBy(identity).maxBy(g => (g._2.size,g._1._1))._1._1)
+      }
 
-      val joined_movie = result.map(m => (m._2,m._1)).join(movies_by_ID.map(r => (r._1,r._2._3)))
+    val joined_movie = result.map(m => (m._2,m._1)).join(movies_by_ID.map(r => (r._1,r._2._3)))
 
-      val result_genre = joined_movie.map { case (key, (year, movies_genre)) => (year, movies_genre) }
+    val result_genre = joined_movie.map { case (key, (year, movies_genre)) => (year, movies_genre) }
 
-      return result_genre
-    }
+    return result_genre
+  }
 
   // Note: if two genre has the same number of rating, return the first one based on lexicographical sorting on genre.
   def getMostAndLeastRatedGenreAllTime: ((String,Int),(String,Int)) =
-    {
-      // Same Process as before
-      val reduce = ratings_.map { case (a, (b, (c, d, e, f, g))) => (a, b) }
-      val result = reduce
-        .groupBy(_._2.unary_+)
-        .map { case (w, l) => (w, l.groupBy(identity).maxBy(g => (g._2.size, g._1._1))._1._1)
+  {
+    // Same Process as before
+    val reduce = ratings_.map { case (a, (b, (c, d, e, f, g))) => (a, b) }
+    val result = reduce
+      .groupBy(_._2.unary_+)
+      .map { case (w, l) => (w, l.groupBy(identity).maxBy(g => (g._2.size, g._1._1))._1._1)
 
 
-        }
+      }
 
-      val joined_movie = result.map(m => (m._2, m._1)).join(movies_by_ID.map(r => (r._1, r._2._3)))
+    val joined_movie = result.map(m => (m._2, m._1)).join(movies_by_ID.map(r => (r._1, r._2._3)))
 
-      val result_genre = joined_movie.map { case (key, (year, movies_genre)) => movies_genre }
+    val result_genre = joined_movie.map { case (key, (year, movies_genre)) => movies_genre }
 
-      // Calculate the frequency of appearence of each genre
-      val grouped_genre = result_genre
-        .flatMap(x => x)
-        .groupBy(x=>x)
-        .mapValues(_.size)
+    // Calculate the frequency of appearence of each genre
+    val grouped_genre = result_genre
+      .flatMap(x => x)
+      .groupBy(x=>x)
+      .mapValues(_.size)
 
-      // Extract the maximum and the minimum occurence
-      val max_genre = grouped_genre.collect().maxBy(g => (g._2,g._1))
-      val min_genre = grouped_genre.collect().minBy(g => (g._2,g._1))
-      val  min_and_most = (min_genre,max_genre)
+    // Extract the maximum and the minimum occurence
+    val max_genre = grouped_genre.collect().maxBy(g => (g._2,g._1))
+    val min_genre = grouped_genre.collect().minBy(g => (g._2,g._1))
+    val  min_and_most = (min_genre,max_genre)
 
-      return min_and_most
+    return min_and_most
 
   }
 
