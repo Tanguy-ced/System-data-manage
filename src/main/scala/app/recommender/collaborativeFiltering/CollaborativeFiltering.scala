@@ -19,42 +19,17 @@ class CollaborativeFiltering(rank: Int,
 
   def init(ratingsRDD: RDD[(Int, Int, Option[Double], Double, Int)]): Unit = {
 
-    /*rates = ratingsRDD.map{case (user, movie, old_rate, rate,time) =>
-      Rating(user.toInt, movie.toInt, rate.toDouble)
-    }
-
-
-    /*println(rates.getClass)
-    /*ratings.take(20).foreach(println)*/
-
-    model = ALS.train(rates, rank, maxIterations, regularizationParameter,n_parallel,seed)
-
-    usersProducts = rates.map { case Rating(user, movie, rate) =>
-      (user, movie)
-    }*/
-    /*predictions.foreach(println)*/
-    /*predictions.take(30).foreach(println)
-    println(2)*/
-    ratingsRDD.cache()*/
-
-    // Convert the input RDD to Rating objects and cache the resulting RDD
     val rates = ratingsRDD.map { case (user, movie, old_rate, rate, time) =>
       Rating(user.toInt, movie.toInt, rate.toDouble)
     }.cache()
 
-    // Partition the data and increase parallelism
-
-    println("entering collab init")
+    // Train the model
     model = ALS.train(rates, rank, maxIterations, regularizationParameter, n_parallel, seed)
-    println("exiting collab init")
     // Extract the user-movie pairs for prediction
     usersProducts = rates.map { case Rating(user, movie, rate) =>
       (user, movie)
     }
 
-    // Unpersist the cached RDDs to free up memory
-    rates.unpersist()
-    ratingsRDD.unpersist()
   }
 
   def predict(userId: Int, movieId: Int): Double = {

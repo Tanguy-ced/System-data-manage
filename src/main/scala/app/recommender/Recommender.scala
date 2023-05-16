@@ -28,12 +28,11 @@ class Recommender(sc: SparkContext,
 
     var query = sc.parallelize(List(genre))
 
-
-    val res = nn_lookup
+    val get_query = nn_lookup
       .lookup(query)
 
-    //
-    val user_movie = res.flatMap(x => {
+    //Extrat the user id and the movie ID from the query
+    val user_movie = get_query.flatMap(x => {
       val list = x._2
       for (elem <- list) yield (userId, elem._1)
     })
@@ -42,30 +41,35 @@ class Recommender(sc: SparkContext,
     var user_movie_arr = user_movie.collect()
 
     var id_movie = user_movie.map(x => x._2)
+
+    // Prediction part
     var rate = Array.empty[(Int, Double)]
     for (elem <- user_movie_arr) {
       rate :+= (elem._2, baselinePredictor.predict(elem._1, elem._2))
     }
     val rate_rdd = sc.parallelize(rate)
 
-    val to_return_maggle = rate_rdd
+    //Convert the result to the desired form
+    val to_return = rate_rdd
       .sortBy(-_._2)
       .take(K)
       .toList
 
-    return to_return_maggle
+    return to_return
   }
 
 
 
   def recommendCollaborative(userId: Int, genre: List[String], K: Int): List[(Int, Double)] = {
 
+
+    //Same process as for the recommender baseline
     var query = sc.parallelize(List(genre))
 
-    val res = nn_lookup
+    val get_query = nn_lookup
       .lookup(query)
 
-    val user_movie = res.flatMap(x => {
+    val user_movie = get_query.flatMap(x => {
       val list = x._2
       for (elem <- list) yield (userId, elem._1)
     })
@@ -79,10 +83,10 @@ class Recommender(sc: SparkContext,
     }
 
     val rate_rdd = sc.parallelize(rate)
-    val to_return_maggle = rate_rdd
+    val to_return = rate_rdd
       .sortBy(-_._2)
       .take(K)
       .toList
-    return to_return_maggle
+    return to_return
   }
 }

@@ -2046,7 +2046,6 @@ class MainTest {
     val res = processor.getNumberOfMoviesRatedEachYear
       .collect()
       .sortWith(_._1 <= _._1)
-    print(res)
     val expected = Array(
       (1996, 607),
       (1997, 649),
@@ -3070,14 +3069,12 @@ class MainTest {
     val queries = moviesLoader
       .load()
       .map(x => x._3)
-    queries.foreach(println)
+
     val res = lsh
       .lookup(queries)
       .filter(x => x._2.filter(y =>
         x._1.size == y._3.size && x._1.zip(y._3).filter(a => a._1 != a._2).size == 0
       ).size != 0)
-    println(res.count())
-    println(moviesLoader.load().count())
     assert(res.count() == moviesLoader.load().count())
   }
 

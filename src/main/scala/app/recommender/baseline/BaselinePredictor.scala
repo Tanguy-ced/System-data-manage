@@ -9,11 +9,12 @@ class BaselinePredictor() extends Serializable {
   private var movies_averaged_deviated : RDD[(Int, Iterable[(Int, Option[Double], Double, Int,Double)], Double)] = _
   private var movies_average_deviation :RDD[(Int, Double)] = _
   def init(ratingsRDD: RDD[(Int, Int, Option[Double], Double, Int)]): Unit = {
-    println("exiting baseline init")
+
+
       var sorted_by_user = ratingsRDD
         .groupBy(_._1)
         .map { case (a, b) => (a, b, b.map(_._4).sum / b.size) }
-      /*sorted_by_user.take(3).foreach(println)*/
+
       movies_averaged = sorted_by_user
         .map { case (user, iterable, average_overall) =>
           val updatedIterable = iterable.map {
@@ -23,7 +24,7 @@ class BaselinePredictor() extends Serializable {
           }
           (user, updatedIterable, average_overall)
         }
-      /*movies_averaged.take(3).foreach(println)*/
+
       movies_averaged_deviated = movies_averaged
         .map { case (user, iterable, average_over) =>
           val update_deviation = iterable.map {
@@ -39,7 +40,7 @@ class BaselinePredictor() extends Serializable {
           }
           (user, update_deviation, average_over)
         }
-      /*movies_averaged_deviated.take(3).foreach(println)*/
+      //
       movies_average_deviation = movies_averaged_deviated
         .map { case (user, iterable, average_) => (user, iterable) }
         .flatMapValues(iterable => iterable.toList)
@@ -50,49 +51,12 @@ class BaselinePredictor() extends Serializable {
           val overall_ave = (iterable.map(_._5).sum / number_rating)
           (movie, overall_ave)
         }
-      /*movies_average_deviation.take(5).foreach(println)*/
-    println("exiting baseline init")
 
   }
-      /*.flatMapValues(iterable => iterable.toList)*/
+
 
   def predict(userId: Int, movieId: Int): Double = {
-    /*println("NEEEEEXT")*/
-    /*var user_data = movies_averaged_deviated
-      .filter{case (user_id,_,_)  => user_id == userId}
-    var movie_data = movies_average_deviation
-      .filter { case (movie_id, _) => movie_id == movieId }
-    var average_user = user_data
-      .map{case (user_I,iterable,average) => average}.collect()(0)
-    var pop_std_mov = user_data
-      .map{case (user_I,iterable,average) =>
-        var std_movie = iterable.map{
-          case (movie_id, old, new_ave, time ,std) => (std)
-        }
-        (std_movie).head
-      }
-    var movie_average_dev = movie_data
-      .map(_._2)
-      .collect()(0)
 
-
-    var normalized = average_user + movie_average_dev
-
-    var scaler = (normalized,average_user) match {
-        case (normalized, average_user) if normalized > average_user => 5-average_user
-        case (normalized, average_user) if normalized < average_user  => average_user-1
-        case (normalized, average_user) if normalized == average_user => 1
-      }
-
-    var right_result = scaler * movie_average_dev
-    /*println("right_res")
-    println(right_result)
-    println("right_res")
-    println("average user : ")*/
-
-    var result = average_user + right_result
-    /*println(result)*/
-    return result*/
     // Get user's average rating
     val average_user = movies_averaged_deviated
       .filter { case (user_id, _, _) => user_id == userId }
