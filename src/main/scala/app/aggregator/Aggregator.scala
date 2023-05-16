@@ -15,9 +15,9 @@ class Aggregator(sc: SparkContext) extends Serializable {
 
   private var state = null
   private var partitioner: HashPartitioner = new HashPartitioner(100)
-  private var movies_rating :  RDD[(Int, (Double, (Int, String, List[String])))] = _
-  private var movies_by_ID : RDD[(Int,(Int, String, List[String]))] = _
-  private var ratings_data: RDD[(Int, Int, Option[Double], Double, Int)] = _
+  var movies_rating :  RDD[(Int, (Double, (Int, String, List[String])))] = _
+  var movies_by_ID : RDD[(Int,(Int, String, List[String]))] = _
+  var ratings_data: RDD[(Int, Int, Option[Double], Double, Int)] = _
   /**
    * Use the initial ratings and titles to compute the average rating for each title.
    * The average rating for unrated titles is 0.0
@@ -30,26 +30,25 @@ class Aggregator(sc: SparkContext) extends Serializable {
             ratings: RDD[(Int, Int, Option[Double], Double, Int)],
             title: RDD[(Int, String, List[String])]
           ): Unit = {
-
-    // Initialise the attribute of the class that we'll use through the aggregator
     ratings_data = ratings
     movies_by_ID = title.groupBy(_._1).flatMapValues(iterable => iterable.toList).partitionBy(partitioner)
 
-    // Group by movie_id and point toward the grades, then calculate the average grade
-    var temp_movies_rating = ratings
+    movies_rating = ratings
       .groupBy(_._2)
       .flatMapValues(iterable => iterable.toList)
       .map{ case(a,(b,c,d,e,f)) => (a, e) }
       .groupBy(_._1)
       .mapValues(iterable => iterable.toList)
       .mapValues { values => values.map(_._2).sum / values.map(_._2).length}
+      .join(movies_by_ID)
 
-    // Filter lines
-    val array_rates = temp_movies_rating.collect()
-    val col2Values = movies_by_ID
-      .filter( x=> !array_rates.contains(x._2._1))
 
-    movies_rating = temp_movies_rating.join(col2Values)
+      /*.map(m => (m._2,m._1)).join(movies_by_ID.map(r => (r._1,r._2._2)))*/
+    /*.mapValues{
+        case Iter(a,b,c,d,e) => d
+      }*/
+    /*grouped_movies.foreach(println)*/
+
 
   }
 
@@ -73,24 +72,33 @@ class Aggregator(sc: SparkContext) extends Serializable {
    *         such titles are rated and -1.0 if no such titles exist.
    */
   def getKeywordQueryResult(keywords: List[String]): Double = {
-    // Keep from the list the movies containing at least one element from the keyword list
+    /*print(keywords)*/
     var reduce_rating = movies_rating
       .map{case (a,(b,(c,d,e))) => (d,b,e)}
     var filtered_movies = reduce_rating
       .filter {
         case (_, _, list) => keywords.forall(list.contains)
       }
-    // Return -1 if no movies are found
+
     if (filtered_movies.count() == 0 ) return -1
 
     if (filtered_movies.foreach(_._2) == None) return 0
-
-    // return in the good format
+    /*filtered_movies.foreach(println)*/
     var result = filtered_movies
       .map(x => x._2)
     var return_value = (result.sum() / result.count())
+    /*print(return_value)*/
     return return_value
+
+
   }
+
+
+    /*movies_rating.foreach(println)*/
+    /*filtered_movies.foreach(println)
+    var a :Double = 2
+    return a*/
+
 
   /**
    * Use the "delta"-ratings to incrementally maintain the aggregate ratings
@@ -101,7 +109,6 @@ class Aggregator(sc: SparkContext) extends Serializable {
   def updateResult(delta_ : Array[(Int, Int, Option[Double], Double, Int)]): Unit = {
 
     var update_data = delta_
-    // Update the ratings according to the delta argument
     var updated_rating = ratings_data
       .map { case (a, b, c, d, e) =>
         update_data.find {
@@ -111,11 +118,21 @@ class Aggregator(sc: SparkContext) extends Serializable {
             (a, b, c, d, e)
           case Some((user_id, movie_id, old, new_rate, time)) =>
 
+            /*update_data = update_data.filterNot { m =>
+              m._1 == a && m._2 == b
+            }*/
+            /*update_data.foreach(println)*/
             (a, b, old, new_rate, e)
 
           case Some((user_id, movie_id, None, new_rate, time)) =>
 
+            /*update_data = update_data.filterNot { m =>
+              m._1 == a && m._2 == b
+            }*/
+
             (a, b, c, new_rate, e)
+
+
         }
       }.collect()
 
@@ -124,7 +141,7 @@ class Aggregator(sc: SparkContext) extends Serializable {
     }
 
 
-    // Update the argument of the class : ratings_data
+
     if (update_data.isEmpty) {
       ratings_data = sc.parallelize(updated_rating)
     }  else {
@@ -133,8 +150,6 @@ class Aggregator(sc: SparkContext) extends Serializable {
 
     }
     movies_rating = movies_rating.unpersist()
-
-    // Restructure the movies_rating to take the new grades into account
     movies_rating = ratings_data
       .groupBy(_._2)
       .flatMapValues(iterable => iterable.toList)
